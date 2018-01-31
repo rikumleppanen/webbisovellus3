@@ -1,2 +1,2 @@
-Send Request
-GET http://localhost:3001/notes
+GET https://mysterious-spire-46438.herokuapp.com/api/persons
+
