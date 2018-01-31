@@ -13,12 +13,16 @@ app.use(morgan(':method :url :body :status :res[content-length] - :response-time
 
 app.use(express.static('build'))
 
-let persons = [
-  { name: 'Arto Hellas', number: '040-123456', id: 1 },
-  { name: 'Martti Tienari', number: '040-123456', id: 2 },
-  { name: 'Arto Järvinen', number: '040-123456', id: 3 },
-  { name: 'Lea Kutvonen', number: '040-123456', id: 4 }
-]
+
+const Person = require('./models/person')
+
+const formatPerson = (person) => {
+  return{
+    name: person.name,
+    number: person.number,
+    id: person._id
+  }
+}
 
 app.get('/info', (req, res) => {
   res.send(`<p>puhelinluettelossa on ${persons.length} henkilön tiedot</p>
@@ -26,7 +30,10 @@ app.get('/info', (req, res) => {
 })
 
 app.get('/api/persons', (req, res) => {
-  res.json(persons)
+  Person.find({})
+    .then(persons => {
+      res.json(persons.map(formatPerson))
+    })
 })
 
 app.get('/api/persons/:id', (request, response) => {
