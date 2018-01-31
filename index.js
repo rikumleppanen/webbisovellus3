@@ -16,83 +16,92 @@ app.use(express.static('build'))
 
 const Person = require('./models/person')
 
-const formatPerson = (person) => {
-  return{
-    name: person.name,
-    number: person.number,
-    id: person._id
-  }
-}
 
 app.get('/info', (req, res) => {
-  res.send(`<p>puhelinluettelossa on ${persons.length} henkilön tiedot</p>
+  Person.find({}).then(persons => {
+    res.send(`<p>puhelinluettelossa on ${persons.length} henkilön tiedot</p>
   <p>${Date()}</p>`)
+  })
+
 })
 
 app.get('/api/persons', (req, res) => {
   Person.find({})
     .then(persons => {
-      res.json(persons.map(formatPerson))
+      res.json(persons.map(Person.format))
     })
 })
 
 app.get('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  const person = persons.find(person => person.id === id)
-  if (person) {
-    response.json(person)
-  } else {
-    response.status(404).end()
-  }
+  Person.findById(request.params.id)
+    .then(one => {
+      if (one) {
+        response.json(Person.format(one))
+      } else {
+        response.status(404).end()
+      }
+    }).catch(error => {
+      console.log(error)
+      response.status(400).send({ error: 'Malformatted id' })
+    })
 })
 
 app.delete('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  persons = persons.filter(person => person.id !== id)
-
-  response.status(204).end()
+  Person.findByIdAndRemove(request.params.id)
+    .then(one => {
+      response.status(204).end()
+    })
+    .catch(error => {
+      response.status(400).send({ error: 'Malformatted id' })
+    })
 })
-
-const getRandomInt = () => {
-  return Math.floor(Math.random() * Math.floor(60000));
-}
 
 app.post('/api/persons', (request, response) => {
   const body = request.body
 
   if (!body.name) {
-    return response.status(400).json({ error: 'Name is missing' })
+     response.status(400).send({ error: 'Name is missing' })
   }
   if (!body.number) {
-    return response.status(400).json({ error: 'Number is missing' })
-  }
-  if (persons.find(person => person.name === body.name)) {
-    return response.status(400).json({ error: 'Person exists already' })
+     response.status(400).send({ error: 'Number is missing' })
   }
 
 
-  const person = {
-    name: body.name,
-    number: body.number,
-    id: getRandomInt()
-  }
+  Person.find({ name: body.name })
+    .then(one => {
+      if (one) {
+        response.status(400).send({ error: 'Name is already taken' })
+      } else {
+        const personObj = new Person({
+          name: body.name,
+          number: body.number
+        })
+        personObj.save()
+          .then(one => {
+            response.json(Person.format(one))
+          }).catch(error => {
+            console.log(error)
+          })
+      }
+    })
 
-  persons = persons.concat(person)
-
-  response.json(person)
 })
 
 app.put("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
   const body = request.body;
 
-  const updatedPerson = persons.find((person) => person.id === id);
-  updatedPerson.number = body.number;
+  const personObj = {
+    name: body.name,
+    number: body.number
+  }
 
-  persons = persons.filter((person) => person.id !== id);
-  persons = persons.concat(updatedPerson);
-
-  response.json(updatedPerson);
+  Person.findByIdAndUpdate(request.params.id, personObj, { new: true })
+    .then(one => {
+      response.json(Person.format(one))
+    }).catch(error => {
+      console.log(error)
+      response.status(400).send({ error: 'Malformatted id' })
+    })
 })
 
 const PORT = process.env.PORT || 3001
