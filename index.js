@@ -67,7 +67,7 @@ app.post('/api/persons', (request, response) => {
   }
 
 
-  Person.find({ name: body.name })
+  Person.findOne({ name: body.name })
     .then(one => {
       if (one) {
         response.status(400).send({ error: 'Name is already taken' })
