@@ -60,17 +60,17 @@ app.post('/api/persons', (request, response) => {
   const body = request.body
 
   if (!body.name) {
-     response.status(400).send({ error: 'Name is missing' })
+     return response.status(400).json({ error: 'Name is missing' })
   }
   if (!body.number) {
-     response.status(400).send({ error: 'Number is missing' })
+     return response.status(400).json({ error: 'Number is missing' })
   }
 
 
   Person.findOne({ name: body.name })
     .then(one => {
       if (one) {
-        response.status(400).send({ error: 'Name is already taken' })
+        return response.status(400).json({ error: 'Name is already taken' })
       } else {
         const personObj = new Person({
           name: body.name,

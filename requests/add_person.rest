@@ -1,7 +1,7 @@
-POST https://mysterious-spire-46438.herokuapp.com/api/persons
+POST http://localhost:3001/api/persons
 content-type: application/json
 
 {
-    "name": "Riihi Kuivaa",
+    "name": "Riiha Kuivaa",
     "number": "3434334"
 }
