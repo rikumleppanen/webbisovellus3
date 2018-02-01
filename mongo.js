@@ -1,7 +1,10 @@
 const mongoose = require('mongoose')
 
-// korvaa url oman tietokantasi urlilla!
-const url = 'mongodb://admin:pluettelo@ds219318.mlab.com:19318/pluettelo'
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config()
+}
+
+const url = process.env.MONGODB_URI
 
 mongoose.connect(url)
 mongoose.Promise = global.Promise;
@@ -19,7 +22,7 @@ if (process.argv[2] && process.argv[3]) {
     person
         .save()
         .then(response => {
-            console.log("Lisätään henkilö "+person.name+" numero " +person.number+" luetteloon")
+            console.log("Lisätään henkilö " + person.name + " numero " + person.number + " luetteloon")
             mongoose.connection.close()
         })
 } else {

@@ -52,7 +52,7 @@ app.delete('/api/persons/:id', (request, response) => {
       response.status(204).end()
     })
     .catch(error => {
-      response.status(400).send({ error: 'Malformatted id' })
+       response.status(400).send({ error: 'Malformatted id' })
     })
 })
 
